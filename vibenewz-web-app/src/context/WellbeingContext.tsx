@@ -44,21 +44,21 @@ export const MOODS: {
     key: "CALM",
     label: "Calm",
     face: "⌒",
-    message: "Feeling calm. Gentle stories come first today.",
+    message: "Feeling calm. Check-in noted.",
     order: ["POSITIVE", "NEUTRAL", "NEGATIVE"],
   },
   {
     key: "CURIOUS",
     label: "Curious",
     face: "?",
-    message: "Feeling curious. Explainers and fresh ideas first.",
+    message: "Feeling curious. Check-in noted.",
     order: ["NEUTRAL", "POSITIVE", "NEGATIVE"],
   },
   {
     key: "CONCERNED",
     label: "Concerned",
     face: "~",
-    message: "Feeling concerned. Heavier stories move to the bottom.",
+    message: "Feeling concerned. Check-in noted.",
     order: ["POSITIVE", "NEUTRAL", "NEGATIVE"],
   },
 ];
@@ -199,6 +199,19 @@ export function orderByMood(
   return [...articles].sort(
     (a, b) => rank(a.sentiment) - rank(b.sentiment) || byDate(a, b),
   );
+}
+const PREFERENCE_ORDER: Record<Sentiment, Sentiment[]> = {
+  POSITIVE: ["POSITIVE", "NEUTRAL", "NEGATIVE"],
+  NEUTRAL: ["NEUTRAL", "POSITIVE", "NEGATIVE"],
+  NEGATIVE: ["NEGATIVE", "NEUTRAL", "POSITIVE"],
+};
+
+export function orderByPreference(articles: NewsArticle[], preferred: Sentiment): NewsArticle[] {
+  const byDate = (a: NewsArticle, b: NewsArticle) =>
+    new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime();
+  const order = PREFERENCE_ORDER[preferred] || PREFERENCE_ORDER.POSITIVE;
+  const rank = (s: Sentiment) => order.indexOf(s);
+  return [...articles].sort((a, b) => rank(a.sentiment) - rank(b.sentiment) || byDate(a, b));
 }
 
 // ---- Reading balance maths ----
