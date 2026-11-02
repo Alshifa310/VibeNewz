@@ -15,7 +15,9 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { useWellbeing, orderByMood } from "../context/WellbeingContext";
+// removed for the feedback fix
+// import { useWellbeing, orderByMood } from "../context/WellbeingContext";
+import { orderByPreference } from "../context/WellbeingContext";
 import {
   NewsArticle,
   getUserFeed,
@@ -39,7 +41,7 @@ const PAGE_SIZE = 6;
 
 export function DashboardScreen({ navigation }: any) {
   const { username, user } = useAuth();
-  const { mood } = useWellbeing();
+  // const { mood } = useWellbeing();
   const { width } = useWindowDimensions();
 
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -179,7 +181,10 @@ export function DashboardScreen({ navigation }: any) {
   const updatedLabel = lastUpdated ? `Updated ${timeAgo(lastUpdated)}` : "";
 
   // ---- Mood gently re-orders the feed (nothing is hidden) ----
-  const ordered = useMemo(() => orderByMood(articles, mood), [articles, mood]);
+  const ordered = useMemo(
+  () => orderByPreference(articles, user?.preferred_sentiment || "POSITIVE"),
+  [articles, user?.preferred_sentiment],
+);
   const featured = useMemo(
     () =>
       ordered.find((a) => a.sentiment === "POSITIVE" && a.image_url) ||

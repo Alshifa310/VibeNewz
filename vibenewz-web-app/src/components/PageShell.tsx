@@ -120,7 +120,7 @@ function HelpButton({ raised = false }: { raised?: boolean }) {
             • “Today’s vibe” shows how uplifting the stories in your feed are.
           </Sans>
           <Sans style={styles.helpText}>
-            • Check in with your mood — it gently shapes what you see.
+            • Check in with your mood to keep track of how you're feeling.
           </Sans>
           <Sans style={styles.helpText}>
             • Bookmark or like stories. Both live under Bookmarks. Spin the

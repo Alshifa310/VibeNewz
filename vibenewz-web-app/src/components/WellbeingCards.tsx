@@ -46,7 +46,7 @@ export function MoodCheckInCard() {
         icon="heart"
       />
       <Sans style={styles.body}>
-        Pause for a moment. Your response gently shapes your feed.
+        Pause for a moment and notice how you're feeling.
       </Sans>
 
       <View style={styles.moodRow}>
