@@ -6,6 +6,7 @@ import {
   Pressable,
   TextInput,
   StyleSheet,
+  Image,
   useWindowDimensions,
   ActivityIndicator,
 } from "react-native";
@@ -39,6 +40,11 @@ export const NAV_ITEMS: {
 export function Logo({ showText = true }: { showText?: boolean }) {
   return (
     <View style={styles.logoRow}>
+      <Image
+        source={require("../../assets/logo.png")}
+        style={styles.logoImage}
+        accessibilityLabel="VibeNewz logo"
+      />
       {showText ? <Serif style={styles.logoText}>VibeNewz</Serif> : null}
     </View>
   );
@@ -391,7 +397,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  logoRow: { flexDirection: "row", alignItems: "center" },
+  logoRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  logoImage: { width: 38, height: 38 },
   logoText: { fontSize: 29, fontWeight: "600", letterSpacing: -0.5 },
   links: { flexDirection: "row", alignItems: "center", gap: 6 },
   link: {

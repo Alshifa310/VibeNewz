@@ -6,6 +6,11 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFF7E1"
+    },
     "ios": {
       "supportsTablet": true
     },
@@ -17,7 +22,8 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "backgroundColor": "#FFF7E1"
+      "backgroundColor": "#FFF7E1",
+      "favicon": "./assets/favicon.png"
     }
   }
 }
