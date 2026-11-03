@@ -20,7 +20,7 @@ import {
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../lib/supabase";
-import { AppUser } from "../api";
+import { API_ORIGIN, AppUser } from "../api";
 
 const GUEST_KEY = "vibenewz_is_guest";
 
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadUserByAuthId(authId: string) {
     try {
       const res = await fetch(
-        `${process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:3000"}/api/users/by-auth/${authId}`
+        `${API_ORIGIN}/api/users/by-auth/${authId}`
       );
       if (res.ok) {
         const data: AppUser = await res.json();
