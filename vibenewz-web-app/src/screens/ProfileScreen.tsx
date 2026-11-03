@@ -110,7 +110,7 @@ function PrimaryButton({
 }
 
 export function ProfileScreen() {
-  const { username, user, updateUser, logout } = useAuth();
+  const { username, user, isGuest, updateUser, logout } = useAuth();
   const { width } = useWindowDimensions();
 
   // ── Account info ──
@@ -207,6 +207,22 @@ export function ProfileScreen() {
         : "";
 
   const twoCol = width >= 1000;
+
+  if (isGuest) {
+    return (
+      <PageShell>
+        <PageHeader
+          icon="settings"
+          eyebrow="Preferences"
+          title="Log in or create account"
+          subtitle="Sign in to save topics, muted keywords, and your personal feed."
+        />
+        <Pressable style={styles.primaryBtn} onPress={logout}>
+          <Sans style={styles.primaryBtnText}>Log in or create account</Sans>
+        </Pressable>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>

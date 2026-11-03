@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import {
   colors,
   fonts,
@@ -22,7 +22,7 @@ import {
 import { Sans, Serif } from "./Typography";
 import { SentimentBadge } from "./SentimentBadge";
 import { useAuth } from "../context/AuthContext";
-import { NewsArticle, getUserFeed } from "../api";
+import { NewsArticle, getAllNews, getUserFeed } from "../api";
 import { initialsFor } from "../utils/news";
 
 export const NAV_ITEMS: {
@@ -36,23 +36,9 @@ export const NAV_ITEMS: {
   { route: "Wellbeing", label: "My wellbeing", icon: "trending-up" },
 ];
 
-export function Logo({
-  size = 30,
-  showText = true,
-}: {
-  size?: number;
-  showText?: boolean;
-}) {
+export function Logo({ showText = true }: { showText?: boolean }) {
   return (
     <View style={styles.logoRow}>
-      <View
-        style={[
-          styles.logoMark,
-          { width: size, height: size, borderRadius: size / 2 },
-        ]}
-      >
-        <Ionicons name="sparkles" size={size * 0.5} color={colors.text} />
-      </View>
       {showText ? <Serif style={styles.logoText}>VibeNewz</Serif> : null}
     </View>
   );
@@ -62,7 +48,7 @@ export function TopNav() {
   const navigation = useNavigation<any>();
   const route = useRoute();
   const { width } = useWindowDimensions();
-  const { username, user, logout } = useAuth();
+  const { username, user, isGuest, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
@@ -70,9 +56,10 @@ export function TopNav() {
   const mobile = width < MOBILE_MAX_WIDTH; // page links move to the bottom bar
 
   const initials = initialsFor(user?.first_name, user?.last_name, username);
-  const fullName =
-    [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
-    `@${username}`;
+  const fullName = isGuest
+    ? "Guest"
+    : [user?.first_name, user?.last_name].filter(Boolean).join(" ") ||
+      `@${username}`;
 
   function go(name: string, params?: object) {
     setMenuOpen(false);
@@ -179,7 +166,9 @@ export function TopNav() {
                 {fullName}
               </Sans>
               <Sans style={styles.menuEmail} numberOfLines={1}>
-                {user?.email || "Add your email in Preferences"}
+                {isGuest
+                  ? "Log in or create account"
+                  : user?.email || "Add your email in Preferences"}
               </Sans>
             </View>
           </View>
@@ -193,8 +182,14 @@ export function TopNav() {
           >
             <Feather name="settings" size={17} color={colors.text} />
             <View style={{ flex: 1 }}>
-              <Sans style={styles.menuRowTitle}>Preferences</Sans>
-              <Sans style={styles.menuRowSub}>Vibe, topics and boundaries</Sans>
+              <Sans style={styles.menuRowTitle}>
+                {isGuest ? "Log in or create account" : "Preferences"}
+              </Sans>
+              <Sans style={styles.menuRowSub}>
+                {isGuest
+                  ? "Sign in to save your preferences"
+                  : "Vibe, topics and boundaries"}
+              </Sans>
             </View>
             <Feather name="chevron-right" size={17} color={colors.text} />
           </Pressable>
@@ -307,10 +302,8 @@ function SearchPanel({
 
   useEffect(() => {
     inputRef.current?.focus();
-    if (username)
-      getUserFeed(username)
-        .then(setArticles)
-        .catch(() => setArticles([]));
+    const load = username ? getUserFeed(username) : getAllNews();
+    load.then(setArticles).catch(() => setArticles([]));
   }, [username]);
 
   const results = useMemo(() => {
@@ -398,12 +391,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  logoRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  logoMark: {
-    backgroundColor: colors.sunshine,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  logoRow: { flexDirection: "row", alignItems: "center" },
   logoText: { fontSize: 29, fontWeight: "600", letterSpacing: -0.5 },
   links: { flexDirection: "row", alignItems: "center", gap: 6 },
   link: {

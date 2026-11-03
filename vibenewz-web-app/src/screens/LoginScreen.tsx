@@ -155,7 +155,7 @@ export function LoginScreen() {
       >
         {/* ── Brand header ── */}
         <View style={styles.brand}>
-          <Logo size={44} />
+          <Logo />
           <View style={styles.taglineRow}>
             <Ionicons name="sparkles-outline" size={13} color={colors.primaryDark} />
             <Eyebrow style={styles.tagline}>News that lifts you up</Eyebrow>

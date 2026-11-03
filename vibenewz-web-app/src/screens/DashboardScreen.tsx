@@ -20,6 +20,7 @@ import { useAuth } from "../context/AuthContext";
 import { orderByPreference } from "../context/WellbeingContext";
 import {
   NewsArticle,
+  getAllNews,
   getUserFeed,
   fetchLiveNews,
   getMutedKeywords,
@@ -69,8 +70,15 @@ export function DashboardScreen({ navigation }: any) {
 
   // ---- Data (same endpoints as before) ----
   const loadFeed = useCallback(async () => {
-    if (!username) return [] as NewsArticle[];
     try {
+      if (!username) {
+        const data = mostlyPositive(await getAllNews());
+        setArticles(data);
+        setMuted([]);
+        setError("");
+        setLastUpdated(Date.now());
+        return data;
+      }
       const [data, mutedRows] = await Promise.all([
         getUserFeed(username),
         getMutedKeywords(username).catch(() => []),
@@ -92,7 +100,24 @@ export function DashboardScreen({ navigation }: any) {
   //  force = true  → Refresh button: skip the server's 30-minute cache
   //  quiet = true  → background refresh: no spinner, no error banner
   async function onRefresh(force = true, quiet = false) {
-    if (!username || refreshingRef.current) return;
+    if (refreshingRef.current) return;
+    if (!username) {
+      refreshingRef.current = true;
+      if (!quiet) {
+        setRefreshing(true);
+        setRefreshError("");
+        setRefreshNote("");
+      }
+      try {
+        await loadFeed();
+        if (!quiet) setRefreshNote("You're up to date.");
+      } finally {
+        refreshingRef.current = false;
+        setRefreshing(false);
+        setLoading(false);
+      }
+      return;
+    }
     refreshingRef.current = true;
     const before = new Set(articlesRef.current.map((a) => a.id));
     let fetched = false;
@@ -756,4 +781,20 @@ function timeAgo(ts: number) {
   if (mins < 1) return "just now";
   if (mins < 60) return `${mins} min ago`;
   return `${Math.floor(mins / 60)} h ago`;
+}
+
+// Public guest feed: every uplifting story, plus a little of the rest.
+function mostlyPositive(articles: NewsArticle[]): NewsArticle[] {
+  const positive = articles.filter((a) => a.sentiment === "POSITIVE");
+  if (!positive.length) return articles;
+  const neutralCap = Math.max(3, Math.round(positive.length * 0.3));
+  const negativeCap = Math.max(1, Math.round(positive.length * 0.15));
+  const byNewest = (a: NewsArticle, b: NewsArticle) =>
+    new Date(b.published_at || 0).getTime() -
+    new Date(a.published_at || 0).getTime();
+  return [
+    ...positive,
+    ...articles.filter((a) => a.sentiment === "NEUTRAL").slice(0, neutralCap),
+    ...articles.filter((a) => a.sentiment === "NEGATIVE").slice(0, negativeCap),
+  ].sort(byNewest);
 }

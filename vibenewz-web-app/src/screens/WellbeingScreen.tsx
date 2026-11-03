@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import {
   View,
+  Pressable,
   StyleSheet,
   ActivityIndicator,
   useWindowDimensions,
@@ -23,8 +24,10 @@ import {
 import { Sans, Serif, Eyebrow } from "../components/Typography";
 import { MOODS, useWellbeing } from "../context/WellbeingContext";
 import { colors, radius, shadows } from "../theme";
+import { useAuth } from "../context/AuthContext";
 
 export function WellbeingScreen() {
+  const { isGuest, logout } = useAuth();
   const { width } = useWindowDimensions();
   const [counts, setCounts] = useState<SentimentCounts | null>(null);
   const [categories, setCategories] = useState<CategoryCount[]>([]);
@@ -66,28 +69,41 @@ export function WellbeingScreen() {
         subtitle="Check in with yourself, see the balance of what you read, and how today’s news landscape looks."
       />
 
-      <View style={[styles.row, !twoCol && { flexDirection: "column" }]}>
-        <View style={styles.col}>
-          <MoodCheckInCard />
+      {isGuest ? (
+        <View style={[styles.card, shadows.card]}>
+          <Serif style={styles.cardTitle}>
+            Log in or sign up to enjoy personalized insights
+          </Serif>
+          <Pressable style={styles.guestBtn} onPress={logout}>
+            <Sans style={styles.guestBtnText}>Log in or sign up</Sans>
+          </Pressable>
         </View>
-        <View style={styles.col}>
-          <ReadingBalanceCard />
-        </View>
-        {threeCol ? (
-          <View style={styles.col}>
-            <MoodWeek />
+      ) : (
+        <>
+          <View style={[styles.row, !twoCol && { flexDirection: "column" }]}>
+            <View style={styles.col}>
+              <MoodCheckInCard />
+            </View>
+            <View style={styles.col}>
+              <ReadingBalanceCard />
+            </View>
+            {threeCol ? (
+              <View style={styles.col}>
+                <MoodWeek />
+              </View>
+            ) : null}
           </View>
-        ) : null}
-      </View>
-      {!threeCol ? (
-        <View style={{ marginTop: 20 }}>
-          <MoodWeek />
-        </View>
-      ) : null}
+          {!threeCol ? (
+            <View style={{ marginTop: 20 }}>
+              <MoodWeek />
+            </View>
+          ) : null}
 
-      <View style={{ marginTop: 20 }}>
-        <FeedPreferenceCard />
-      </View>
+          <View style={{ marginTop: 20 }}>
+            <FeedPreferenceCard />
+          </View>
+        </>
+      )}
       
       <View style={{ marginTop: 64, marginBottom: 26 }}>
         <Eyebrow style={{ marginBottom: 12 }}>App analytics</Eyebrow>
@@ -364,6 +380,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTitle: { fontSize: 26, lineHeight: 30 },
+  guestBtn: {
+    alignSelf: "flex-start",
+    marginTop: 18,
+    backgroundColor: colors.primary,
+    borderRadius: 999,
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+  },
+  guestBtnText: { color: colors.white, fontWeight: "700" },
   muted: { fontSize: 13, color: colors.textMuted },
   weekRow: {
     flexDirection: "row",

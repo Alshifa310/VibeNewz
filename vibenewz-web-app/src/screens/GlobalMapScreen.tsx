@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
-import { NewsArticle, getUserFeedBySentiment } from "../api";
+import { NewsArticle, getAllNews, getUserFeedBySentiment } from "../api";
 import { PageShell, PageHeader, OutlinePill } from "../components/PageShell";
 import { Globe, GlobePin } from "../components/Globe";
 import { StoryImage } from "../components/StoryImage";
@@ -36,6 +36,7 @@ export function GlobalMapScreen({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [region, setRegion] = useState<Region>("Asia Pacific");
+  const [countryKey, setCountryKey] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
   const [focus, setFocus] = useState<{
     lat: number;
@@ -44,8 +45,12 @@ export function GlobalMapScreen({ navigation }: any) {
   } | null>(null);
 
   useEffect(() => {
-    if (!username) return;
-    getUserFeedBySentiment(username, "POSITIVE")
+    const load = username
+      ? getUserFeedBySentiment(username, "POSITIVE")
+      : getAllNews().then((rows) =>
+          rows.filter((a) => a.sentiment === "POSITIVE"),
+        );
+    load
       .then(setArticles)
       .catch(() =>
         setError("Couldn't load stories. Check that the backend is running."),
@@ -89,7 +94,11 @@ export function GlobalMapScreen({ navigation }: any) {
     return [...map.values()];
   }, [articles]);
 
-  const stories = byRegion[region];
+  const stories = countryKey
+    ? byRegion[region].filter(
+        (a) => (a.country || "").toLowerCase().trim() === countryKey,
+      )
+    : byRegion[region];
   const story = stories[index];
   const selectedKey = story?.country
     ? story.country.toLowerCase().trim()
@@ -114,6 +123,7 @@ export function GlobalMapScreen({ navigation }: any) {
   }, [loading]);
 
   function selectRegion(r: Region) {
+    setCountryKey(null);
     setRegion(r);
     setIndex(0);
     const info = countryInfo(byRegion[r][0]?.country);
@@ -124,12 +134,9 @@ export function GlobalMapScreen({ navigation }: any) {
   function selectPin(key: string) {
     const info = countryInfo(key);
     if (!info) return;
-    const list = byRegion[info.region];
-    const i = list.findIndex(
-      (a) => (a.country || "").toLowerCase().trim() === key,
-    );
+    setCountryKey(key);
     setRegion(info.region);
-    setIndex(Math.max(0, i));
+    setIndex(0);
     turnTo(info.lat, info.lng);
   }
 
